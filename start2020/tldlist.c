@@ -115,24 +115,24 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
             iterator->current = iterator->head;
         }
         else{
-            TLDNode *curr_in_ite = iterator->head;
-            TLDNode *prev;
-            int in = 0;
-            while(curr_in_ite != NULL){
-                if(strcmp(curr_in_ite->tld,curr_tldlist->tld) == 0){
-                    in = 1;
-                    curr_in_ite->count++;
+            TLDNode *curr_iter = iterator->head;
+            TLDNode *prev_iter;
+            int a = 0;
+            while(curr_iter != NULL){
+                if(strcmp(curr_iter->tld,curr_tldlist->tld) == 0){
+                    a = 1;
+                    curr_iter->count++;
                     break;
                 }
-                prev = curr_in_ite;
-                curr_in_ite = curr_in_ite->next;
+                prev_iter = curr_iter;
+                curr_iter = curr_iter->next;
             }
-            if(!in){
+            if(a == 0){
                 TLDNode *to_add = (TLDNode*)malloc(sizeof(TLDNode));
                 to_add->count = curr_tldlist->count;
                 strcpy(to_add->tld,curr_tldlist->tld);
                 to_add->next = NULL;
-                prev->next = to_add;
+                prev_iter->next = to_add;
             }
         }
         curr_tldlist = curr_tldlist->next;
