@@ -128,11 +128,11 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
                 curr_iter = curr_iter->next;
             }
             if(a == 0){
-                TLDNode *to_add = (TLDNode*)malloc(sizeof(TLDNode));
-                to_add->count = curr_tldlist->count;
-                strcpy(to_add->tld,curr_tldlist->tld);
-                to_add->next = NULL;
-                prev_iter->next = to_add;
+                TLDNode *new_node = (TLDNode*)malloc(sizeof(TLDNode));
+                strcpy(new_node->tld,curr_tldlist->tld);
+                new_node->next = NULL;
+                new_node->count = curr_tldlist->count;
+                prev_iter->next = new_node;
             }
         }
         curr_tldlist = curr_tldlist->next;
