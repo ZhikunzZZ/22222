@@ -10,7 +10,7 @@ struct tldlist{
     TLDNode* head;
 };
 struct tldnode{
-    char domain[32];
+    char tld[32];
     long count;
     TLDNode* next;
 };
@@ -71,7 +71,7 @@ int tldlist_add(TLDList *tld, char *hostname, Date *d){
     }
     if(date_compare(d,tld->begin)>=0&&date_compare(d,tld->end)<=0){
         TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
-        strcpy(to_add->domain,p);
+        strcpy(to_add->tld,p);
         to_add->count=1;
         to_add->next=NULL;
         if(tld->head==NULL){
@@ -119,7 +119,7 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
         if(iterator->head==NULL){
             TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
             to_add->count=curr_in_tld->count;
-            strcpy(to_add->domain,curr_in_tld->domain);
+            strcpy(to_add->tld,curr_in_tld->tld);
             to_add->next=NULL;
             iterator->head=to_add;
             iterator->curr=iterator->head;
@@ -129,7 +129,7 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
             TLDNode* prev;
             int in=0;
             while(curr_in_ite!=NULL){
-                if(strcmp(curr_in_ite->domain,curr_in_tld->domain)==0){
+                if(strcmp(curr_in_ite->tld,curr_in_tld->tld)==0){
                     in=1;
                     curr_in_ite->count++;
                     break;
@@ -140,7 +140,7 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
             if(!in){
                 TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
                 to_add->count=curr_in_tld->count;
-                strcpy(to_add->domain,curr_in_tld->domain);
+                strcpy(to_add->tld,curr_in_tld->tld);
                 to_add->next=NULL;
                 prev->next=to_add;
             }
@@ -179,7 +179,7 @@ void tldlist_iter_destroy(TLDIterator *iter){
  * tldnode_tldname returns the tld associated with the TLDNode
  */
 char *tldnode_tldname(TLDNode *node){
-    return node->domain;
+    return node->tld;
 }
 
 /*
