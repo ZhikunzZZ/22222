@@ -56,30 +56,28 @@ void tldlist_destroy(TLDList *tld){
  * returns 1 if the entry was counted, 0 if not
  */
 int tldlist_add(TLDList *tld, char *hostname, Date *d){
-    char *p = hostname;
-    while(strchr(p,'.')!=NULL){
-        p=strchr(p,'.')+1;
+    char *tld_1 = hostname;
+    while(strchr(tld_1,'.') != NULL){
+        tld_1 = strchr(tld_1,'.')+1;
     }
-    
-    if(date_compare(d,tld->begin)>=0&&date_compare(d,tld->end)<=0){
-        TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
-        strcpy(to_add->tld,p);
-        to_add->count=1;
-        to_add->next=NULL;
-        if(tld->head==NULL){
-            tld->head=to_add;
+    if((date_compare(d,tld->begin) >= 0) && (date_compare(d,tld->end) <= 0)){
+        TLDNode *new_node = (TLDNode*)malloc(sizeof(TLDNode));
+        strcpy(new_node->tld,tld_1);
+        new_node->next = NULL;
+        new_node->count = 1;
+        if(tld->head == NULL){
+            tld->head = new_node;
         }
         else{
-            TLDNode* curr=tld->head;
-            while(curr->next!=NULL){
-                curr=curr->next;
+            TLDNode *curr = tld->head;
+            while(curr->next != NULL){
+                curr = curr->next;
             }
-            curr->next=to_add;
+            curr->next = new_node;
         }
         return 1;
     }
     else{
-        printf("no add date\n");
         return 0;
     }
     return 0;
