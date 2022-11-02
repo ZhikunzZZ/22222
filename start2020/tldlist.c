@@ -5,14 +5,14 @@
 
 
 struct tldlist{
-    Date *begin;
-    Date *end;
+    Date* begin;
+    Date* end;
     TLDNode* head;
 };
 struct tldnode{
     char tld[32];
-    long count;
     TLDNode* next;
+    long count;
 };
 struct tlditerator{
     TLDNode* head;
@@ -27,10 +27,10 @@ struct tlditerator{
  * returns a pointer to the list if successful, NULL if not
  */
 TLDList *tldlist_create(Date *begin, Date *end){
-    TLDList * tldlist=(TLDList *)malloc(sizeof(TLDList));
-    tldlist->begin=date_duplicate(begin);
-    tldlist->end=date_duplicate(end);
-    tldlist->head=NULL;
+    TLDList * tldlist = (TLDList *)malloc(sizeof(TLDList));
+    tldlist->begin = date_duplicate(begin);
+    tldlist->end = date_duplicate(end);
+    tldlist->head = NULL;
     return tldlist;
 }
 
@@ -40,15 +40,15 @@ TLDList *tldlist_create(Date *begin, Date *end){
  * all heap allocated storage associated with the list is returned to the heap
  */
 void tldlist_destroy(TLDList *tld){
+    TLDNode* curr=tld->head;
+    TLDNode* need_free;
+    while(curr!=NULL){
+        need_free=curr;
+        curr=curr->next;
+        free(need_free);
+    }
     date_destroy(tld->begin);
     date_destroy(tld->end);
-    TLDNode* curr=tld->head;
-    TLDNode* to_free;
-    while(curr!=NULL){
-        to_free=curr;
-        curr=curr->next;
-        free(to_free);
-    }
     free(tld);
 }
 

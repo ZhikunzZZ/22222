@@ -16,7 +16,7 @@ struct date{
  *         NULL if not (syntax error)
  */
 Date *date_create(char *datestr){
-    Date* date=(Date*)malloc(sizeof(Date));
+    Date* date = (Date*)malloc(sizeof(Date));
     sscanf(datestr, "%d/%d/%d", &date->day, &date->month, &date->year);
     if ((0 < date->day) && (date->day < 32) && (0 < date->month) && (date->month < 13) && (0 < date->year) && (date->year < 3000)){
         return date;
@@ -32,10 +32,10 @@ Date *date_create(char *datestr){
  *         NULL if not (memory allocation failure)
  */
 Date *date_duplicate(Date *d){
-    Date* date=(Date*)malloc(sizeof(Date));
-    date->day=d->day;
-    date->month=d->month;
-    date->year=d->year;
+    Date* date = (Date*)malloc(sizeof(Date));
+    date->day = d->day;
+    date->month = d->month;
+    date->year = d->year;
     if(date){
         return date;
     }else{
@@ -49,24 +49,24 @@ Date *date_duplicate(Date *d){
  * date1<date2, date1==date2, date1>date2, respectively
  */
 int date_compare(Date *date1, Date *date2){
-    if(date1->year<date2->year){
+    if(date1->year < date2->year){
         return -1;
     }
-    else if(date1->year>date2->year){
+    else if(date1->year > date2->year){
         return 1;
     }
     else{
-        if(date1->month<date2->month){
+        if(date1->month < date2->month){
             return -1;
         }
-        else if(date1->month>date2->month){
+        else if(date1->month > date2->month){
             return 1;
         }
         else{
-            if(date1->day<date2->day){
+            if(date1->day < date2->day){
                 return -1;
             }
-            else if(date1->day<date2->day){
+            else if(date1->day < date2->day){
                 return 1;
             }
             else{
