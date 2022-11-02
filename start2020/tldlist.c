@@ -38,11 +38,11 @@ TLDList *tldlist_create(Date *begin, Date *end){
  * all heap allocated storage associated with the list is returned to the heap
  */
 void tldlist_destroy(TLDList *tld){
-    TLDNode* curr=tld->head;
+    TLDNode* curr_node=tld->head;
     TLDNode* need_free;
-    while(curr!=NULL){
-        need_free=curr;
-        curr=curr->next;
+    while(curr_node!=NULL){
+        need_free=curr_node;
+        curr_node=curr_node->next;
         free(need_free);
     }
     date_destroy(tld->begin);
