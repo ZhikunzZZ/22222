@@ -10,13 +10,13 @@ struct tldlist{
     TLDNode* head;
 };
 struct tldnode{
-    char tld[32];
+    char tld;
     long count;
     TLDNode* next;
 };
 struct tlditerator{
     TLDNode* head;
-    TLDNode* curr;
+    TLDNode* current;
 };
 
 /*
@@ -122,7 +122,7 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
             strcpy(to_add->tld,curr_in_tld->tld);
             to_add->next=NULL;
             iterator->head=to_add;
-            iterator->curr=iterator->head;
+            iterator->current=iterator->head;
         }
         else{
             TLDNode* curr_in_ite=iterator->head;
@@ -155,9 +155,9 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
  * to the TLDNode if successful, NULL if no more elements to return
  */
 TLDNode *tldlist_iter_next(TLDIterator *iter){
-    TLDNode * ret=iter->curr;
-    if(iter->curr!=NULL)
-        iter->curr=iter->curr->next;
+    TLDNode * ret=iter->current;
+    if(iter->current!=NULL)
+        iter->current=iter->current->next;
     return ret;
 }
 
