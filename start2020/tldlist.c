@@ -145,10 +145,11 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
  * to the TLDNode if successful, NULL if no more elements to return
  */
 TLDNode *tldlist_iter_next(TLDIterator *iter){
-    TLDNode * ret=iter->current;
-    if(iter->current!=NULL)
-        iter->current=iter->current->next;
-    return ret;
+    TLDNode *next_node = iter->current;
+    if(iter->current != NULL){
+        iter->current = iter->current->next;
+        return next_node;
+    }
 }
 
 /*
