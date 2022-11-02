@@ -88,11 +88,11 @@ int tldlist_add(TLDList *tld, char *hostname, Date *d){
  * the creation of the TLDList
  */
 long tldlist_count(TLDList *tld){
-    long sum=0;
-    TLDNode* curr=tld->head;
-    while(curr!=NULL){
-        sum+=curr->count;
-        curr=curr->next;
+    long sum = 0;
+    TLDNode *curr_node = tld->head;
+    while(curr_node != NULL){
+        sum += curr_node->count;
+        curr_node = curr_node->next;
     }
     return sum;
 }
@@ -102,40 +102,40 @@ long tldlist_count(TLDList *tld){
  * to the iterator if successful, NULL if not
  */
 TLDIterator *tldlist_iter_create(TLDList *tld){
-    TLDIterator * iterator=(TLDIterator*)malloc(sizeof(TLDIterator));
-    iterator->head=NULL;
-    TLDNode* curr_in_tld=tld->head;
-    while(curr_in_tld!=NULL){
-        if(iterator->head==NULL){
-            TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
-            to_add->count=curr_in_tld->count;
-            strcpy(to_add->tld,curr_in_tld->tld);
-            to_add->next=NULL;
-            iterator->head=to_add;
-            iterator->current=iterator->head;
+    TLDIterator *iterator = (TLDIterator*)malloc(sizeof(TLDIterator));
+    iterator->head = NULL;
+    TLDNode *curr_tldlist = tld->head;
+    while(curr_tldlist != NULL){
+        if(iterator->head == NULL){
+            TLDNode *to_add = (TLDNode*)malloc(sizeof(TLDNode));
+            to_add->count = curr_tldlist->count;
+            strcpy(to_add->tld,curr_tldlist->tld);
+            to_add->next = NULL;
+            iterator->head = to_add;
+            iterator->current = iterator->head;
         }
         else{
-            TLDNode* curr_in_ite=iterator->head;
-            TLDNode* prev;
-            int in=0;
-            while(curr_in_ite!=NULL){
-                if(strcmp(curr_in_ite->tld,curr_in_tld->tld)==0){
-                    in=1;
+            TLDNode *curr_in_ite = iterator->head;
+            TLDNode *prev;
+            int in = 0;
+            while(curr_in_ite != NULL){
+                if(strcmp(curr_in_ite->tld,curr_tldlist->tld) == 0){
+                    in = 1;
                     curr_in_ite->count++;
                     break;
                 }
-                prev=curr_in_ite;
-                curr_in_ite=curr_in_ite->next;
+                prev = curr_in_ite;
+                curr_in_ite = curr_in_ite->next;
             }
             if(!in){
-                TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
-                to_add->count=curr_in_tld->count;
-                strcpy(to_add->tld,curr_in_tld->tld);
-                to_add->next=NULL;
-                prev->next=to_add;
+                TLDNode *to_add = (TLDNode*)malloc(sizeof(TLDNode));
+                to_add->count = curr_tldlist->count;
+                strcpy(to_add->tld,curr_tldlist->tld);
+                to_add->next = NULL;
+                prev->next = to_add;
             }
         }
-        curr_in_tld=curr_in_tld->next;
+        curr_tldlist = curr_tldlist->next;
     }
     return iterator;
 }
