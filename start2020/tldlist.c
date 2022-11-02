@@ -38,8 +38,8 @@ TLDList *tldlist_create(Date *begin, Date *end){
  * all heap allocated storage associated with the list is returned to the heap
  */
 void tldlist_destroy(TLDList *tld){
-    TLDNode* curr_node=tld->head;
-    TLDNode* need_free;
+    TLDNode *curr_node=tld->head;
+    TLDNode *need_free;
     while(curr_node != NULL){
         need_free = curr_node;
         curr_node = curr_node->next;
@@ -60,11 +60,7 @@ int tldlist_add(TLDList *tld, char *hostname, Date *d){
     while(strchr(p,'.')!=NULL){
         p=strchr(p,'.')+1;
     }
-    for(int i=0;i<strlen(p);i++){
-        if(*(p+i)>='A'&&*(p+i)<='Z'){
-            *(p+i)=*(p+i)+32;
-        }
-    }
+    
     if(date_compare(d,tld->begin)>=0&&date_compare(d,tld->end)<=0){
         TLDNode* to_add=(TLDNode*)malloc(sizeof(TLDNode));
         strcpy(to_add->tld,p);
