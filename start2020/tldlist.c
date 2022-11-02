@@ -27,11 +27,11 @@ struct tlditerator{
  * returns a pointer to the list if successful, NULL if not
  */
 TLDList *tldlist_create(Date *begin, Date *end){
-    TLDList * tld_list=(TLDList *)malloc(sizeof(TLDList));
-    tld_list->begin=date_duplicate(begin);
-    tld_list->end=date_duplicate(end);
-    tld_list->head=NULL;
-    return tld_list;
+    TLDList * tldlist=(TLDList *)malloc(sizeof(TLDList));
+    tldlist->begin=date_duplicate(begin);
+    tldlist->end=date_duplicate(end);
+    tldlist->head=NULL;
+    return tldlist;
 }
 
 /*

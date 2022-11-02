@@ -17,16 +17,13 @@ struct date{
  */
 Date *date_create(char *datestr){
     Date* date=(Date*)malloc(sizeof(Date));
-    char buf[5];
-    strncpy(buf,datestr,2);
-    buf[2]='\0';
-    date->day=atoi(buf);
-    strncpy(buf,datestr+3,2);
-    buf[2]='\0';
-    date->month=atoi(buf);
-    strcpy(buf,datestr+6);
-    date->year=atoi(buf);
-    return date;
+    sscanf(datestr, "%d/%d/%d", &date->day, &date->month, &date->year);
+    if ((0 < date->day) && (date->day < 32) && (0 < date->month) && (date->month < 13) && (0 < date->year) && (date->year < 3000)){
+        return date;
+    }else{
+        free(date);
+        return NULL;
+    }
 }
 
 /*
@@ -35,11 +32,16 @@ Date *date_create(char *datestr){
  *         NULL if not (memory allocation failure)
  */
 Date *date_duplicate(Date *d){
-     Date* date=(Date*)malloc(sizeof(Date));
-     date->day=d->day;
-     date->month=d->month;
-     date->year=d->year;
-     return date;
+    Date* date=(Date*)malloc(sizeof(Date));
+    date->day=d->day;
+    date->month=d->month;
+    date->year=d->year;
+    if(date){
+        return date;
+    }else{
+        return NULL;
+    }
+    
 }
 
 /*
@@ -80,4 +82,3 @@ int date_compare(Date *date1, Date *date2){
 void date_destroy(Date *d){
     free(d);
 }
-
