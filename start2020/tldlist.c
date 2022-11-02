@@ -107,11 +107,11 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
     TLDNode *curr_tldlist = tld->head;
     while(curr_tldlist != NULL){
         if(iterator->head == NULL){
-            TLDNode *to_add = (TLDNode*)malloc(sizeof(TLDNode));
-            to_add->count = curr_tldlist->count;
-            strcpy(to_add->tld,curr_tldlist->tld);
-            to_add->next = NULL;
-            iterator->head = to_add;
+            TLDNode *head_node = (TLDNode*)malloc(sizeof(TLDNode));
+            strcpy(head_node->tld,curr_tldlist->tld);
+            head_node->next = NULL;
+            head_node->count = curr_tldlist->count;
+            iterator->head = head_node;
             iterator->current = iterator->head;
         }
         else{
