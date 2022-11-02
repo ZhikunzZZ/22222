@@ -10,7 +10,7 @@ struct tldlist{
     TLDNode* head;
 };
 struct tldnode{
-    char tld;
+    char tld[32];
     long count;
     TLDNode* next;
 };
