@@ -16,7 +16,7 @@ struct date{
  *         NULL if not (syntax error)
  */
 Date *date_create(char *datestr){
-    Date* date = (Date*)malloc(sizeof(Date));
+    Date *date = (Date*)malloc(sizeof(Date));
     sscanf(datestr, "%d/%d/%d", &date->day, &date->month, &date->year);
     if ((0 < date->day) && (date->day < 32) && (0 < date->month) && (date->month < 13) && (0 < date->year) && (date->year < 3000)){
         return date;
@@ -32,7 +32,7 @@ Date *date_create(char *datestr){
  *         NULL if not (memory allocation failure)
  */
 Date *date_duplicate(Date *d){
-    Date* date = (Date*)malloc(sizeof(Date));
+    Date *date = (Date*)malloc(sizeof(Date));
     date->day = d->day;
     date->month = d->month;
     date->year = d->year;
