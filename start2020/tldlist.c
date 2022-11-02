@@ -40,9 +40,9 @@ TLDList *tldlist_create(Date *begin, Date *end){
 void tldlist_destroy(TLDList *tld){
     TLDNode* curr_node=tld->head;
     TLDNode* need_free;
-    while(curr_node!=NULL){
-        need_free=curr_node;
-        curr_node=curr_node->next;
+    while(curr_node != NULL){
+        need_free = curr_node;
+        curr_node = curr_node->next;
         free(need_free);
     }
     date_destroy(tld->begin);
@@ -56,9 +56,7 @@ void tldlist_destroy(TLDList *tld){
  * returns 1 if the entry was counted, 0 if not
  */
 int tldlist_add(TLDList *tld, char *hostname, Date *d){
-    char *p;
-    p=hostname;
-
+    char *p = hostname;
     while(strchr(p,'.')!=NULL){
         p=strchr(p,'.')+1;
     }
