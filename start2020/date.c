@@ -41,7 +41,6 @@ Date *date_duplicate(Date *d){
     if(date){
         return date;
     }else{
-        free(date);
         return NULL;
     }
     
