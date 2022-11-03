@@ -2,7 +2,9 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include"tldlist.h"
-
+/*  
+ * This is my own work as defined in the Academic Ethics agreement I have signed.
+ */
 
 struct tldlist{
     Date *begin, *end;
