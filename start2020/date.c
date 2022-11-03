@@ -2,7 +2,9 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include "date.h"
-
+/*  
+ * This is my own work as defined in the Academic Ethics agreement I have signed.
+ */
 struct date{
     int year;
     int month;
@@ -39,6 +41,7 @@ Date *date_duplicate(Date *d){
     if(date){
         return date;
     }else{
+        free(date);
         return NULL;
     }
     
