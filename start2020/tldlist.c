@@ -146,7 +146,8 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
  */
 TLDNode *tldlist_iter_next(TLDIterator *iter){
     TLDNode *next_node = iter->current;
-    iter->current = iter->current->next;
+    if(iter->current != NULL)
+        iter->current = iter->current->next;
     return next_node;
 }
 
