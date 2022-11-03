@@ -146,21 +146,20 @@ TLDIterator *tldlist_iter_create(TLDList *tld){
  */
 TLDNode *tldlist_iter_next(TLDIterator *iter){
     TLDNode *next_node = iter->current;
-    if(iter->current != NULL)
-        iter->current = iter->current->next;
-        return next_node;
+    iter->current = iter->current->next;
+    return next_node;
 }
 
 /*
  * tldlist_iter_destroy destroys the iterator specified by `iter'
  */
 void tldlist_iter_destroy(TLDIterator *iter){
-    TLDNode* curr=iter->head;
-    TLDNode* to_free;
-    while(curr!=NULL){
-        to_free=curr;
-        curr=curr->next;
-        free(to_free);
+    TLDNode *curr_node = iter->head;
+    TLDNode *need_free;
+    while(curr_node != NULL){
+        need_free = curr_node;
+        curr_node = curr_node->next;
+        free(need_free);
     }
     free(iter);
 }
@@ -177,7 +176,7 @@ char *tldnode_tldname(TLDNode *node){
  * corresponding tld was added to the list
  */
 long tldnode_count(TLDNode *node){
-    if(node!=NULL){
+    if(node != NULL){
         return node->count;
     }
     else{
