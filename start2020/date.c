@@ -1,14 +1,12 @@
-#include<string.h>
-#include<stdlib.h>
-#include<stdio.h>
+#include <stdio.h>
 #include "date.h"
-/*  
- * This is my own work as defined in the Academic Ethics agreement I have signed.
- */
+#include <string.h>
+#include <stdlib.h>
+
 struct date{
-    int year;
-    int month;
     int day;
+    int month;
+    int year;
 };
 
 /*
@@ -18,14 +16,27 @@ struct date{
  *         NULL if not (syntax error)
  */
 Date *date_create(char *datestr){
-    Date *date = (Date*)malloc(sizeof(Date));
-    sscanf(datestr, "%d/%d/%d", &date->day, &date->month, &date->year);
-    if ((0 < date->day) && (date->day < 32) && (0 < date->month) && (date->month < 13) && (0 < date->year) && (date->year < 3000)){
-        return date;
-    }else{
-        free(date);
-        return NULL;
+    Date thisDate;
+    int day,month,year;
+    if( 3 ==  sscanf(datestr, "%d/%d/%d;", &day, &month, &year)){
+        if(day<= 31 & day > 0 & month <= 12 & month >= 1 & year >= 1 & year <= 9999){
+            thisDate.day = day;
+            thisDate.month = month;
+            thisDate.year = year;
+        }else{return(NULL);}
+    }else{return(NULL);};
+
+    Date* ptr = (Date*) malloc(sizeof(Date));
+
+    if(ptr==NULL){
+        return(NULL);
     }
+
+    ptr->day = thisDate.day;
+    ptr->month = thisDate.month;
+    ptr->year = thisDate.year;
+    
+    return(ptr);
 }
 
 /*
@@ -34,16 +45,13 @@ Date *date_create(char *datestr){
  *         NULL if not (memory allocation failure)
  */
 Date *date_duplicate(Date *d){
-    Date *date = (Date*)malloc(sizeof(Date));
-    date->day = d->day;
-    date->month = d->month;
-    date->year = d->year;
-    if(date){
-        return date;
+    Date* dupe = (Date*) malloc(sizeof(Date));
+    if(dupe == NULL){
+        return(NULL);
     }else{
-        return NULL;
+        memcpy(dupe,d,sizeof(Date));
+        return(dupe);
     }
-    
 }
 
 /*
@@ -51,30 +59,25 @@ Date *date_duplicate(Date *d){
  * date1<date2, date1==date2, date1>date2, respectively
  */
 int date_compare(Date *date1, Date *date2){
-    if(date1->year < date2->year){
-        return -1;
-    }
-    else if(date1->year > date2->year){
-        return 1;
-    }
-    else{
-        if(date1->month < date2->month){
-            return -1;
-        }
-        else if(date1->month > date2->month){
-            return 1;
-        }
-        else{
-            if(date1->day < date2->day){
-                return -1;
+
+    if(date1->year == date2->year){
+        if(date1->month == date2->month){
+            if(date1->day == date2->day){
+                return(0);
+            }else if(date1->day > date2->day){
+                return(1);
+            }else{
+                return(-1);
             }
-            else if(date1->day < date2->day){
-                return 1;
-            }
-            else{
-                return 0;
-            }
+        }else if(date1->month > date2->month){
+            return(1);
+        }else{
+            return(-1);
         }
+    }else if(date1->year > date2->year){
+        return(1);
+    }else{
+        return(-1);
     }
 }
 
@@ -83,4 +86,8 @@ int date_compare(Date *date1, Date *date2){
  */
 void date_destroy(Date *d){
     free(d);
+    d = NULL;
 }
+
+
+//#endif /* _DATE_H_INCLUDED_ */
