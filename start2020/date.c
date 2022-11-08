@@ -1,93 +1,69 @@
-#include <stdio.h>
-#include "date.h"
-#include <string.h>
-#include <stdlib.h>
+/*
+ * This is my own work as defined in the Academic Ethics agreement I have signed.
+ */
 
-struct date{
+#include "date.h"
+#include <stdlib.h>
+#include <string.h>
+
+//-----dd/mm/yyyy
+#define DATE_LEN 10
+
+struct date {
     int day;
     int month;
     int year;
 };
 
-/*
- * date_create creates a Date structure from `datestr`
- * `datestr' is expected to be of the form "dd/mm/yyyy"
- * returns pointer to Date structure if successful,
- *         NULL if not (syntax error)
- */
-Date *date_create(char *datestr){
-    Date thisDate;
-    int day,month,year;
-    if( 3 ==  sscanf(datestr, "%d/%d/%d;", &day, &month, &year)){
-        if(day<= 31 & day > 0 & month <= 12 & month >= 1 & year >= 1 & year <= 9999){
-            thisDate.day = day;
-            thisDate.month = month;
-            thisDate.year = year;
-        }else{return(NULL);}
-    }else{return(NULL);};
+Date *date_create(char *datestr) {
+    struct date *d = (struct date *) malloc(sizeof(struct date));
 
-    Date* ptr = (Date*) malloc(sizeof(Date));
+    char input_date[DATE_LEN + 1];
+    strcpy(input_date, datestr);
 
-    if(ptr==NULL){
-        return(NULL);
+    const char *delim = "/";
+
+    if (input_date[0] == '\0') input_date[0] = '0'; //if datestr[0] == 0 than after strcpy input_date[0] == '\0'
+    if (strlen(datestr) != DATE_LEN || input_date[2] != '/' || input_date[5] != '/') return NULL; //straightforward way to parse date
+
+    d->day = atoi(strtok(input_date, delim));
+    d->month = atoi(strtok(NULL, delim));
+    d->year = atoi(strtok(NULL, delim));
+
+    if ((d->day < 1 || d->day > 31) || (d->month < 1 || d->month > 12) || d->year < 1) {
+        free(d);
+        d = NULL;
+        return NULL;
     }
-
-    ptr->day = thisDate.day;
-    ptr->month = thisDate.month;
-    ptr->year = thisDate.year;
-    
-    return(ptr);
+    return d;
 }
 
-/*
- * date_duplicate creates a duplicate of `d'
- * returns pointer to new Date structure if successful,
- *         NULL if not (memory allocation failure)
- */
-Date *date_duplicate(Date *d){
-    Date* dupe = (Date*) malloc(sizeof(Date));
-    if(dupe == NULL){
-        return(NULL);
-    }else{
-        memcpy(dupe,d,sizeof(Date));
-        return(dupe);
+Date *date_duplicate(Date *d) {
+    struct date *copy = NULL;
+    if ((copy = (struct date *) malloc(sizeof(struct date))) != NULL) {
+        copy->day = d->day;
+        copy->month = d->month;
+        copy->year = d->year;
     }
+    return copy;
 }
 
-/*
- * date_compare compares two dates, returning <0, 0, >0 if
- * date1<date2, date1==date2, date1>date2, respectively
- */
-int date_compare(Date *date1, Date *date2){
+int date_compare(Date *date1, Date *date2) {
+    if (date1->year != date2->year) {
+        return (date1->year - date2->year);
+    }
+    if (date1->month != date2->month) {
+        return (date1->month - date2->month);
+    }
+    if (date1->day != date2->day) {
+        return date1->day - date1->day;
+    }
+    return 0;
+}
 
-    if(date1->year == date2->year){
-        if(date1->month == date2->month){
-            if(date1->day == date2->day){
-                return(0);
-            }else if(date1->day > date2->day){
-                return(1);
-            }else{
-                return(-1);
-            }
-        }else if(date1->month > date2->month){
-            return(1);
-        }else{
-            return(-1);
-        }
-    }else if(date1->year > date2->year){
-        return(1);
-    }else{
-        return(-1);
+void date_destroy(Date *d) {
+    if (d != NULL) {
+        free(d);
     }
 }
 
-/*
- * date_destroy returns any storage associated with `d' to the system
- */
-void date_destroy(Date *d){
-    free(d);
-    d = NULL;
-}
-
-
-//#endif /* _DATE_H_INCLUDED_ */
