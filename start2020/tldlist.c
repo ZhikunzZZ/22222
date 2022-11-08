@@ -1,188 +1,185 @@
-#include<string.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include"tldlist.h"
-/*  
+/*
  * This is my own work as defined in the Academic Ethics agreement I have signed.
  */
 
-struct tldlist{
-    Date *begin, *end;
-    TLDNode *head;
+#include "tldlist.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include "string.h"
+
+struct tldlist {
+    Date *date_begin;
+    Date *date_end;
+    int valid_nodes;
+    struct tldnode *root;
 };
-struct tldnode{
-    char tld[32];
-    TLDNode *next;
-    long count;
+
+struct tldnode {
+    char *tld_value;
+    int repeats;
+
+    struct tldnode *left_child;
+    struct tldnode *right_child;
 };
-struct tlditerator{
-    TLDNode *head, *current;
+
+struct tlditerator {
+    struct tldnode **stack;
+    int current_index;
 };
 
 /*
- * tldlist_create generates a list structure for storing counts against
- * top level domains (TLDs)
- *
- * creates a TLDList that is constrained to the `begin' and `end' Date's
- * returns a pointer to the list if successful, NULL if not
+ * tldnode_create function return a pointer for node, needed in a tldlist tree structure
+ * returns NULL if is impossible to allocaet enough memory
  */
-TLDList *tldlist_create(Date *begin, Date *end){
-    TLDList *tldlist = (TLDList *)malloc(sizeof(TLDList));
-    tldlist->begin = date_duplicate(begin);
-    tldlist->end = date_duplicate(end);
-    tldlist->head = NULL;
-    return tldlist;
+struct tldnode *tldnode_create(char *val);
+
+/*
+ * tldnode_destroy recursively dealocates memory used for tree nodes
+ */
+void tldnode_destroy(struct tldnode *node);
+
+
+TLDList *tldlist_create(Date *begin, Date *end) {
+    struct tldlist *list = NULL;
+    if ((list = malloc(sizeof(struct tldlist))) != NULL) {
+        list->date_begin = date_duplicate(begin);
+        list->date_end = date_duplicate(end);
+        if (!(list->date_begin && list->date_end)) return NULL;
+        list->root = NULL;
+        list->valid_nodes = 0;
+    }
+    return list;
 }
 
-/*
- * tldlist_destroy destroys the list structure in `tld'
- *
- * all heap allocated storage associated with the list is returned to the heap
- */
-void tldlist_destroy(TLDList *tld){
-    TLDNode *curr_node=tld->head;
-    TLDNode *need_free;
-    while(curr_node != NULL){
-        need_free = curr_node;
-        curr_node = curr_node->next;
-        free(need_free);
-    }
-    date_destroy(tld->begin);
-    date_destroy(tld->end);
+void tldlist_destroy(TLDList *tld) {
+    tldnode_destroy(tld->root);
+    date_destroy(tld->date_begin);
+    date_destroy(tld->date_end);
     free(tld);
 }
 
-/*
- * tldlist_add adds the TLD contained in `hostname' to the tldlist if
- * `d' falls in the begin and end dates associated with the list;
- * returns 1 if the entry was counted, 0 if not
- */
-int tldlist_add(TLDList *tld, char *hostname, Date *d){
-    char *tld_1 = hostname;
-    while(strchr(tld_1,'.') != NULL){
-        tld_1 = strchr(tld_1,'.')+1;
-    }
-    if((date_compare(d,tld->begin) >= 0) && (date_compare(d,tld->end) <= 0)){
-        TLDNode *new_node = (TLDNode*)malloc(sizeof(TLDNode));
-        strcpy(new_node->tld,tld_1);
-        new_node->next = NULL;
-        new_node->count = 1;
-        if(tld->head == NULL){
-            tld->head = new_node;
-        }
-        else{
-            TLDNode *curr = tld->head;
-            while(curr->next != NULL){
-                curr = curr->next;
-            }
-            curr->next = new_node;
-        }
-        return 1;
-    }
-    else{
+int tldlist_add(TLDList *tld, char *hostname, Date *d) {
+    if (!d || date_compare(d, tld->date_begin) < 0
+        || date_compare(d, tld->date_end) > 0)
         return 0;
-    }
-    return 0;
-}
 
-/*
- * tldlist_count returns the number of successful tldlist_add() calls since
- * the creation of the TLDList
- */
-long tldlist_count(TLDList *tld){
-    long sum = 0;
-    TLDNode *curr_node = tld->head;
-    while(curr_node != NULL){
-        sum += curr_node->count;
-        curr_node = curr_node->next;
-    }
-    return sum;
-}
+    ++tld->valid_nodes;
+    char *currentTLD = malloc(strlen(hostname) * sizeof(char));
+    strcpy(currentTLD, hostname);
+    currentTLD = strtok(currentTLD, ".");
 
-/*
- * tldlist_iter_create creates an iterator over the TLDList; returns a pointer
- * to the iterator if successful, NULL if not
- */
-TLDIterator *tldlist_iter_create(TLDList *tld){
-    TLDIterator *iterator = (TLDIterator*)malloc(sizeof(TLDIterator));
-    iterator->head = NULL;
-    TLDNode *curr_tldlist = tld->head;
-    while(curr_tldlist != NULL){
-        if(iterator->head == NULL){
-            TLDNode *head_node = (TLDNode*)malloc(sizeof(TLDNode));
-            strcpy(head_node->tld,curr_tldlist->tld);
-            head_node->next = NULL;
-            head_node->count = curr_tldlist->count;
-            iterator->head = head_node;
-            iterator->current = iterator->head;
-        }
-        else{
-            TLDNode *curr_iter = iterator->head;
-            TLDNode *prev_iter;
-            int a = 0;
-            while(curr_iter != NULL){
-                if(strcmp(curr_iter->tld,curr_tldlist->tld) == 0){
-                    a = 1;
-                    curr_iter->count++;
+    char *tld_val = malloc(strlen(hostname) * sizeof(char));
+    while (currentTLD) {
+        strcpy(tld_val, currentTLD);
+        currentTLD = strtok(NULL, ".");
+    }
+    for (int i = 0; tld_val[i] != '\0'; ++i) {
+        tld_val[i] = (char) tolower(tld_val[i]);
+    }
+    if (tld->root == NULL) {
+        tld->root = tldnode_create(tld_val);
+    } else {
+        struct tldnode *temp = tld->root;
+        while (temp) {
+            if (strcmp(tld_val, temp->tld_value) < 0) {
+                if (temp->left_child)
+                    temp = temp->left_child;
+                else {
+                    temp->left_child = tldnode_create(tld_val);
                     break;
                 }
-                prev_iter = curr_iter;
-                curr_iter = curr_iter->next;
-            }
-            if(a == 0){
-                TLDNode *new_node = (TLDNode*)malloc(sizeof(TLDNode));
-                strcpy(new_node->tld,curr_tldlist->tld);
-                new_node->next = NULL;
-                new_node->count = curr_tldlist->count;
-                prev_iter->next = new_node;
+            } else if (strcmp(tld_val, temp->tld_value) > 0) {
+                if (temp->right_child)
+                    temp = temp->right_child;
+                else {
+                    temp->right_child = tldnode_create(tld_val);
+                    break;
+                }
+            } else {
+                ++temp->repeats;
+                break;
             }
         }
-        curr_tldlist = curr_tldlist->next;
     }
-    return iterator;
+    free(currentTLD);
+    free(tld_val);
+    currentTLD = NULL;
+    tld_val = NULL;
+    return 1;
 }
 
-/*
- * tldlist_iter_next returns the next element in the list; returns a pointer
- * to the TLDNode if successful, NULL if no more elements to return
- */
-TLDNode *tldlist_iter_next(TLDIterator *iter){
-    TLDNode *next_node = iter->current;
-    if(iter->current != NULL)
-        iter->current = iter->current->next;
-    return next_node;
+struct tldnode *tldnode_create(char *value) {
+    struct tldnode *node = NULL;
+    if ((node = (struct tldnode *) malloc(sizeof(struct tldnode))) != NULL) {
+        node->tld_value = malloc((strlen(value)) * sizeof(char *));
+        strcpy(node->tld_value, value);
+        node->left_child = NULL;
+        node->right_child = NULL;
+        node->repeats = 1;
+    }
+    return node;
 }
 
-/*
- * tldlist_iter_destroy destroys the iterator specified by `iter'
- */
-void tldlist_iter_destroy(TLDIterator *iter){
-    TLDNode *curr_node = iter->head;
-    TLDNode *need_free;
-    while(curr_node != NULL){
-        need_free = curr_node;
-        curr_node = curr_node->next;
-        free(need_free);
+long tldlist_count(TLDList *tld) {
+    return tld->valid_nodes;
+}
+
+TLDIterator *tldlist_iter_create(TLDList *tld) {
+    struct tlditerator *iter = NULL;
+    if ((iter = malloc(sizeof(TLDIterator))) != NULL) {
+
+        if ((iter->stack = malloc(tldlist_count(tld) * sizeof(struct tldnode))) == NULL)
+            return NULL;
+
+        iter->current_index = -1;
+        struct tldnode *temp = tld->root;
+        while (temp) {
+            iter->stack[++iter->current_index] = temp;
+            temp = temp->left_child;
+        }
     }
+    return iter;
+}
+
+TLDNode *tldlist_iter_next(TLDIterator *iter) {
+    if (iter->current_index < 0) return NULL;
+    struct tldnode *current = iter->stack[iter->current_index];
+    struct tldnode *temp = current->right_child;
+    --iter->current_index;
+    while (temp) {
+        ++iter->current_index;
+        iter->stack[iter->current_index] = temp;
+        temp = temp->left_child;
+    }
+    return current;
+}
+
+void tldlist_iter_destroy(TLDIterator *iter) {
+    free(iter->stack);
+    iter->stack = NULL;
     free(iter);
 }
 
-/*
- * tldnode_tldname returns the tld associated with the TLDNode
- */
-char *tldnode_tldname(TLDNode *node){
-    return node->tld;
+char *tldnode_tldname(TLDNode *node) {
+    return node->tld_value;
 }
 
-/*
- * tldnode_count returns the number of times that a log entry for the
- * corresponding tld was added to the list
- */
-long tldnode_count(TLDNode *node){
-    if(node != NULL){
-        return node->count;
+long tldnode_count(TLDNode *node) {
+    return node->repeats;
+}
+
+void tldnode_destroy(struct tldnode *node) {
+    if (!node) return;
+    if (node->left_child) {
+        tldnode_destroy(node->left_child);
+        node->left_child = NULL;
     }
-    else{
-        return 0;
+    if (node->right_child) {
+        tldnode_destroy(node->right_child);
+        node->right_child = NULL;
     }
+    free(node->tld_value);
+    node->tld_value = NULL;
+
+    free(node);
 }
