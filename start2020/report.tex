@@ -1,0 +1,283 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+
+\title{Algorithmics I --  Assessed Exercise\\ \vspace{4mm} 
+Status and Implementation Reports}
+
+\author{\bf Zhikun Chen\\ \bf 2612803C}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Status report}
+
+I think my two programs are both working correctly. I have tried all the examples posted on teams and got the correct outputs with the similar elapsed time. \\ \\
+For the first program, it outputs the exact same length and word ladder as the correct answer. \\ \\
+And for the second program, it outputs the correct path distance, but there are some small differences in the word ladder paths of individual examples. I don't 
+see this as a problem because the output word ladder path and the answer word ladder path have the same distance.\\
+
+\section*{Implementation report}
+
+\begin{itemize}
+\item[(a)] 
+I use the adjacency list (It has higher space efficiency compared to adjacency matrix) represent the graph (consider each word as a vertex, and if two words differ 
+by only one letter, consider them as adjacent vertices). \\The first program is based on the BFS, start with the start_word, put it in the wait_list, iterate through 
+its adjacency nodes (vertexs) and put the unvisited adjacency nodes into the wait_list, for printing purposes, store the previous vertex and step of the current 
+node when add it into the wait_list. Delate the previous vertex from wait_list and set visited. Repeat the process until the end_word is visited, if the wait_list is 
+empty and the end word has not been visited, the path does not exist.\\ Generally speaking, we first find words with a distance of 1 from the starting word, then 2, 
+and so on. Therefore, the path from the first visit to the ending word must be the shortest path. \\Regarding the output, since I store the number of steps in each visited 
+vertex, I only need to print the step (I name it counter) attribute of the ending word, and to print the word ladder, recursive from the last word (Since it started with 
+the last word, I reversed it through list storage).
+\item[(b)]
+I use the adjacency list represent the graph same as the first program. Since need to consider weight, so I add a weight attribute for node.\\The second program is based on 
+the dijkstra algorithm. First set up two lists, one for storing the distance from the start vertex to all vertices and one for storing the nodes currently wait to visit 
+(initially empty). Initialize the distance list, assigning the starting vertex to 0 and the others to max_value. Start with the start_word, Put its adjacent nodes into 
+wait_list and update their shortest distance. Start loop, first find the min weight node inside the wait_list, set it as visited and remove from wait_list. Iterate over its 
+adjacent nodes, compare the distance (d(this vertex) and d(pre vertex) + wt(pre to this)) each, if the new distance is shorter, update the distance_list and update the pre 
+(previous vertex) attribute. If the the corresponding vertex of the node not visited yet, add it to the wait_list. End loop when end_word visited or the wait_list empty.
+if end_word still not visited after the loop end, no path exist, else the shortest distance can get from the distance_list.\\Regarding the output, print the distance in the 
+distance_list corresponding to end_word, and the word ladder path can print in the same way as the first program.
+
+\end{itemize} 
+
+\section*{Empirical results}
+
+This section is part of the marking scheme "Outputs from test data: 2 marks".
+\\ \\
+If the program fails to terminate in, say, two minutes, simply report non-termination. To print your outputs you can use the verbatim environment:
+
+\begin{verbatim}
+wordladder
+---------------------------------
+word1 = print
+word2 = paint
+shortest word ladder of length 1
+example shortest word ladder:
+    print
+    paint
+
+Elapsed time: 158 milliseconds
+---------------------------------
+word1 = forty
+word2 = fifty
+shortest word ladder of length 4
+example shortest word ladder:
+    forty
+    forth
+    firth
+    fifth
+    fifty
+
+Elapsed time: 138 milliseconds
+---------------------------------
+word1 = cheat
+word2 = solve
+shortest word ladder of length 13
+example shortest word ladder:
+    cheat
+    chert
+    chart
+    charm
+    chasm
+    chase
+    cease
+    lease
+    leave
+    heave
+    helve
+    halve
+    salve
+    solve
+
+Elapsed time: 137 milliseconds
+---------------------------------
+word1 = worry
+word2 = happy
+no word ladder exists
+
+Elapsed time: 131 milliseconds
+---------------------------------
+word1 = smile
+word2 = frown
+shortest word ladder of length 12
+example shortest word ladder:
+    smile
+    smite
+    spite
+    spice
+    slice
+    slick
+    click
+    clock
+    crock
+    crook
+    croon
+    crown
+    frown
+
+Elapsed time: 138 milliseconds
+---------------------------------
+word1 = small
+word2 = large
+shortest word ladder of length 16
+example shortest word ladder:
+    small
+    shall
+    shale
+    share
+    shard
+    chard
+    charm
+    chasm
+    chase
+    cease
+    tease
+    terse
+    verse
+    verge
+    merge
+    marge
+    large
+
+Elapsed time: 139 milliseconds
+---------------------------------
+word1 = black
+word2 = white
+shortest word ladder of length 8
+example shortest word ladder:
+    black
+    blank
+    blink
+    brink
+    brine
+    trine
+    thine
+    whine
+    white
+
+Elapsed time: 137 milliseconds
+---------------------------------
+word1 = greed
+word2 = money
+no word ladder exists
+
+Elapsed time: 136 milliseconds
+---------------------------------
+
+dijkstra
+---------------------------------
+word1 = blare
+word2 = blase
+minimum path distance 1
+path with minimum distance:
+    blare
+    blase
+
+Elapsed time: 179 milliseconds
+---------------------------------
+word1 = blond
+word2 = blood
+minimum path distance 1
+path with minimum distance:
+    blond
+    blood
+
+Elapsed time: 174 milliseconds
+---------------------------------
+word1 = allow
+word2 = alloy
+minimum path distance 2
+path with minimum distance:
+    allow
+    alloy
+
+Elapsed time: 144 milliseconds
+---------------------------------
+word1 = cheat
+word2 = solve
+minimum path distance 96
+path with minimum distance:
+    cheat
+    chert
+    chart
+    charm
+    chasm
+    chase
+    cease
+    lease
+    leave
+    heave
+    helve
+    halve
+    salve
+    solve
+
+Elapsed time: 176 milliseconds
+---------------------------------
+word1 = worry
+word2 = happy
+no path exists
+
+Elapsed time: 141 milliseconds
+---------------------------------
+word1 = print
+word2 = paint
+minimum path distance 17
+path with minimum distance:
+    print
+    paint
+
+Elapsed time: 172 milliseconds
+---------------------------------
+word1 = small
+word2 = large
+minimum path distance 118
+path with minimum distance:
+    small
+    shall
+    shale
+    share
+    shard
+    chard
+    charm
+    chasm
+    chase
+    cease
+    tease
+    terse
+    verse
+    verge
+    merge
+    marge
+    large
+
+Elapsed time: 172 milliseconds
+---------------------------------
+word1 = black
+word2 = white
+minimum path distance 56
+path with minimum distance:
+    black
+    slack
+    shack
+    shank
+    thank
+    thane
+    thine
+    whine
+    white
+
+Elapsed time: 173 milliseconds
+---------------------------------
+word1 = greed
+word2 = money
+no path exists
+
+Elapsed time: 170 milliseconds
+
+\end{verbatim}
+
+\end{document}
