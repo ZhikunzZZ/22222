@@ -109,30 +109,6 @@
 #include <mutex>
 #include <thread>
 
-struct Dir {
-private:
-    std::vector<std::string> dirs;
-    std::mutex mutex;
-public:
-    auto get(int i){
-        std::unique_lock<std::mutex> lock(mutex);
-        auto item=dirs[i];
-        //lock.unlock();
-        return item;
-    }
-    void push_back(std::string item){
-        std::unique_lock<std::mutex> lock(mutex);
-        dirs.push_back(item);
-        //lock.unlock();
-    }
-    auto size(){
-        std::unique_lock<std::mutex> lock(mutex);
-        auto s= dirs.size();
-        //lock.unlock();
-        return s;
-    }
-};
-
 struct HashMap {
 private:
     std::unordered_map<std::string, std::list<std::string>> theTable;
@@ -141,32 +117,27 @@ public:
     auto find(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         auto ret= theTable.find(item);
-        //lock.unlock();
         return ret;
     }
     auto getAddress(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         auto address= &theTable[item];
-        //lock.unlock();
         return address;
     }
     void insert(std::pair<std::string, std::list<std::string>> itemPair){
         std::unique_lock<std::mutex> lock(mutex);
         theTable.insert(itemPair);
-        //lock.unlock();
     }
 
     auto end(){
         std::unique_lock<std::mutex> lock(mutex);
         auto item= theTable.end();
-        //lock.unlock();
         return item;
     }
 
     bool compare(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         bool ret= (theTable.find(item)==theTable.end());
-        //lock.unlock();
         return ret;
     }
     bool processInsert(std::string item){
@@ -174,12 +145,10 @@ public:
         if(theTable.find(item)==theTable.end())
         {
             theTable.insert({ item, {} } );
-            //lock.unlock();
             return true;
         }
         else
         {
-            //lock.unlock();
             return false;
         }
     }
@@ -193,7 +162,6 @@ public:
     void push_back(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         workQueue.push_back(item);
-        //lock.unlock();
     }
     void pop_front(){
         std::unique_lock<std::mutex> lock(mutex);
@@ -201,12 +169,10 @@ public:
         {
             workQueue.pop_front();
         }
-        //lock.unlock();
     }
     auto size(){
         std::unique_lock<std::mutex> lock(mutex);
         auto s=workQueue.size();
-        //lock.unlock();
         return s;
     }
     std::string front(){
@@ -214,12 +180,10 @@ public:
         if(workQueue.size()!=0)
         {
             std::string item=workQueue.front();
-            //lock.unlock();
             return item;
         }
         else
         {
-            //lock.unlock();
             return NULL;
         }
     }
@@ -232,11 +196,9 @@ public:
         }
         else
         {
-            //lock.unlock();
             return "";
         }
         workQueue.pop_front();
-        //lock.unlock();
         return item;
     }
     void processPush(std::string item, bool equal){
@@ -244,7 +206,6 @@ public:
         {
             std::unique_lock<std::mutex> lock(mutex);
             workQueue.push_back(item);
-            //lock.unlock();
         }
         else
         {
@@ -284,7 +245,7 @@ static FILE *openFile(const char *file)
 {
     FILE *fd;
     for (unsigned int i = 0; i < dirs.size(); i++) {
-        std::string path = dirs.get(i) + file;
+        std::string path = dirs[i] + file;
         fd = fopen(path.c_str(), "r");
         if (fd != NULL)
             return fd; // return the first file that successfully opens
