@@ -215,7 +215,7 @@ public:
 
 };
 
-Dir dirs;
+std::vector<std::string> dirs;
 HashMap theTable;
 WorkQueue workQ;
 
