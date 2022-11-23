@@ -109,138 +109,121 @@
 #include <mutex>
 #include <thread>
 
-struct Dir
-{
+struct Dir {
 private:
     std::vector<std::string> dirs;
     std::mutex mutex;
 public:
-    auto get(int i)
-    {
+    auto get(int i){
         std::unique_lock<std::mutex> lock(mutex);
         auto item=dirs[i];
-        lock.unlock();
+        //lock.unlock();
         return item;
     }
-    void push_back(std::string item)
-    {
+    void push_back(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         dirs.push_back(item);
-        lock.unlock();
+        //lock.unlock();
     }
-    auto size()
-    {
+    auto size(){
         std::unique_lock<std::mutex> lock(mutex);
         auto s= dirs.size();
-        lock.unlock();
+        //lock.unlock();
         return s;
     }
 };
 
-struct HashTable
-{
+struct HashMap {
 private:
     std::unordered_map<std::string, std::list<std::string>> theTable;
     std::mutex mutex;
 public:
-    auto find(std::string item)
-    {
+    auto find(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         auto ret= theTable.find(item);
-        lock.unlock();
+        //lock.unlock();
         return ret;
     }
-    auto getAddress(std::string item)
-    {
+    auto getAddress(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         auto address= &theTable[item];
-        lock.unlock();
+        //lock.unlock();
         return address;
     }
-    void insert(std::pair<std::string, std::list<std::string>> itemPair)
-    {
+    void insert(std::pair<std::string, std::list<std::string>> itemPair){
         std::unique_lock<std::mutex> lock(mutex);
         theTable.insert(itemPair);
-        lock.unlock();
+        //lock.unlock();
     }
 
-    auto end()
-    {
+    auto end(){
         std::unique_lock<std::mutex> lock(mutex);
         auto item= theTable.end();
-        lock.unlock();
+        //lock.unlock();
         return item;
     }
 
-    bool compare(std::string item)
-    {
+    bool compare(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         bool ret= (theTable.find(item)==theTable.end());
-        lock.unlock();
+        //lock.unlock();
         return ret;
     }
-    bool processInsert(std::string item)  // LAST THREE LINES OF PROCESS: Splitted here
-    {
+    bool processInsert(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         if(theTable.find(item)==theTable.end())
         {
             theTable.insert({ item, {} } );
-            lock.unlock();
+            //lock.unlock();
             return true;
         }
         else
         {
-            lock.unlock();
+            //lock.unlock();
             return false;
         }
     }
 };
 
-struct WorkQueue
-{
+struct WorkQueue {
 private:
     std::list<std::string> workQueue;
     std::mutex mutex;
 public:
-    void push_back(std::string item)
-    {
+    void push_back(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         workQueue.push_back(item);
-        lock.unlock();
+        //lock.unlock();
     }
-    void pop_front()
-    {
+    void pop_front(){
         std::unique_lock<std::mutex> lock(mutex);
         if(workQueue.size()>0)
         {
             workQueue.pop_front();
         }
-        lock.unlock();
+        //lock.unlock();
     }
-    auto size()
-    {
+    auto size(){
         std::unique_lock<std::mutex> lock(mutex);
         auto s=workQueue.size();
-        lock.unlock();
+        //lock.unlock();
         return s;
     }
-    std::string front()
-    {
+    std::string front(){
         std::unique_lock<std::mutex> lock(mutex);
         if(workQueue.size()!=0)
         {
             std::string item=workQueue.front();
-            lock.unlock();
+            //lock.unlock();
             return item;
         }
         else
         {
-            lock.unlock();
+            //lock.unlock();
             return NULL;
         }
     }
-    std::string pop()
-    {
+    std::string pop(){
         std::unique_lock<std::mutex> lock(mutex);
         std::string item;
         if(workQueue.size()!=0)
@@ -249,20 +232,19 @@ public:
         }
         else
         {
-            lock.unlock();
+            //lock.unlock();
             return "";
         }
         workQueue.pop_front();
-        lock.unlock();
+        //lock.unlock();
         return item;
     }
-    void processPush(std::string item, bool equal)  // LAST THREE LINES OF PROCESS: And here
-    {
+    void processPush(std::string item, bool equal){
         if(equal)
         {
             std::unique_lock<std::mutex> lock(mutex);
             workQueue.push_back(item);
-            lock.unlock();
+            //lock.unlock();
         }
         else
         {
@@ -273,11 +255,10 @@ public:
 };
 
 Dir dirs;
-HashTable theTable;
+HashMap theTable;
 WorkQueue workQ;
 
-void tableQueueProcess(std::string name)  // LAST THREE LINES OF PROCESS: Merged here
-{
+void tableQueueProcess(std::string name) {
     bool equal = theTable.processInsert(name);
     workQ.processPush(name,equal);
 }
@@ -293,8 +274,7 @@ std::pair<std::string, std::string> parseFile(const char* c_file) {
     std::string::size_type pos = file.rfind('.');
     if (pos == std::string::npos) {
         return {file, ""};
-    }
-    else {
+    } else {
         return {file.substr(0, pos), file.substr(pos + 1)};
     }
 }
@@ -303,8 +283,7 @@ std::pair<std::string, std::string> parseFile(const char* c_file) {
 static FILE *openFile(const char *file)
 {
     FILE *fd;
-    for (unsigned int i = 0; i < dirs.size(); i++)
-    {
+    for (unsigned int i = 0; i < dirs.size(); i++) {
         std::string path = dirs.get(i) + file;
         fd = fopen(path.c_str(), "r");
         if (fd != NULL)
@@ -314,49 +293,30 @@ static FILE *openFile(const char *file)
 }
 
 // process file, looking for #include "foo.h" lines
-static void process(const char *file, std::list<std::string> *ll)
-{
+static void process(const char *file, std::list<std::string> *ll) {
     char buf[4096], name[4096];
     // 1. open the file
     FILE *fd = openFile(file);
-    if (fd == NULL)
-    {
+    if (fd == NULL) {
         fprintf(stderr, "Error opening %s\n", file);
         exit(-1);
     }
-    while (fgets(buf, sizeof(buf), fd) != NULL)
-    {
+    while (fgets(buf, sizeof(buf), fd) != NULL) {
         char *p = buf;
         // 2a. skip leading whitespace
-        while (isspace((int)*p))
-        {
-            p++;
-        }
+        while (isspace((int)*p)) { p++; }
         // 2b. if match #include
-        if (strncmp(p, "#include", 8) != 0)
-        {
-            continue;
-        }
+        if (strncmp(p, "#include", 8) != 0) { continue; }
         p += 8; // point to first character past #include
         // 2bi. skip leading whitespace
-        while (isspace((int)*p))
-        {
-            p++;
-        }
-        if (*p != '"')
-        {
-            continue;
-        }
+        while (isspace((int)*p)) { p++; }
+        if (*p != '"') { continue; }
         // 2bii. next character is a "
         p++; // skip "
         // 2bii. collect remaining characters of file name
         char *q = name;
-        while (*p != '\0')
-        {
-            if (*p == '"')
-            {
-                break;
-            }
+        while (*p != '\0') {
+            if (*p == '"') { break; }
             *q++ = *p++;
         }
         *q = '\0';
