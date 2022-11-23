@@ -118,7 +118,7 @@ public:
         auto ret= theTable.find(item);
         return ret;
     }
-    auto getAddress(std::string item){
+    auto get(std::string item){
         std::unique_lock<std::mutex> lock(mutex);
         auto address= &theTable[item];
         return address;
@@ -299,7 +299,7 @@ static void printDependencies(std::unordered_set<std::string> *printed,
     std::string name = toProcess->front();
     toProcess->pop_front();
     // 3. lookup file in the table, yielding list of dependencies
-    std::list<std::string> *ll = &theTable[name];
+    std::list<std::string> *ll = theTable.get(name);
     // 4. iterate over dependencies
     for (auto iter = ll->begin(); iter != ll->end(); iter++) {
       // 4a. if filename is already in the printed table, continue
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
     }
 
     // 4a&b. lookup dependencies and invoke 'process'
-    process(filename.c_str(), &theTable[filename]);
+    process(filename.c_str(), theTable.get(filename));
   }
 
   // 5. for each file argument
