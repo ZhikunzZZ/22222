@@ -322,7 +322,7 @@ void runningInThread(){
         if(name.empty()){
             break;
         }
-        process(name.c_str(),theTable.getAddress(name));
+        process(name.c_str(),theTable.get(name));
     }
 }
 
