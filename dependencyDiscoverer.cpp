@@ -171,7 +171,6 @@ public:
     {
         std::unique_lock<std::mutex> lock(mutex);
         workQueue.push_back(item);
-        lock.unlock();
     }
     void pop_front()
     {
@@ -180,13 +179,11 @@ public:
         {
             workQueue.pop_front();
         }
-        lock.unlock();
     }
     auto size()
     {
         std::unique_lock<std::mutex> lock(mutex);
         auto s=workQueue.size();
-        lock.unlock();
         return s;
     }
     std::string front()
@@ -195,12 +192,10 @@ public:
         if(workQueue.size()!=0)
         {
             std::string item=workQueue.front();
-            lock.unlock();
             return item;
         }
         else
         {
-            lock.unlock();
             return NULL;
         }
     }
@@ -214,11 +209,9 @@ public:
         }
         else
         {
-            lock.unlock();
             return "";
         }
         workQueue.pop_front();
-        lock.unlock();
         return item;
     }
     void processPush(std::string item, bool equal)  // LAST THREE LINES OF PROCESS: And here
@@ -227,7 +220,6 @@ public:
         {
             std::unique_lock<std::mutex> lock(mutex);
             workQueue.push_back(item);
-            lock.unlock();
         }
         else
         {
