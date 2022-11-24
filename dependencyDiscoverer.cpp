@@ -195,14 +195,13 @@ public:
         std::string item;
         if(workQueue.size()!=0)
         {
-            item = workQueue.front();
+            workQueue.pop_front();
+            return workQueue.front();
         }
         else
         {
             return "";
         }
-        workQueue.pop_front();
-        return item;
     }
     void processPush(std::string item, bool equal)  // LAST THREE LINES OF PROCESS: And here
     {
