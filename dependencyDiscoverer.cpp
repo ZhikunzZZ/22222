@@ -174,16 +174,15 @@ public:
     auto size()
     {
         std::unique_lock<std::mutex> lock(mutex);
-        auto s=workQueue.size();
-        return s;
+        return workQueue.size();
     }
     std::string front()
     {
         std::unique_lock<std::mutex> lock(mutex);
         if(workQueue.size()!=0)
         {
-            std::string item=workQueue.front();
-            return item;
+            //std::string item=workQueue.front();
+            return workQueue.front();
         }
         else
         {
