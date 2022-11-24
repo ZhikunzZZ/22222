@@ -125,16 +125,15 @@ public:
         std::unique_lock<std::mutex> lock(mutex);
         return &theTable[item];
     }
-    void insert(std::pair<std::string, std::list<std::string>> itemPair)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        theTable.insert(itemPair);
-    }
-
     auto end()
     {
         std::unique_lock<std::mutex> lock(mutex);
         return theTable.end();
+    }
+    void insert(std::pair<std::string, std::list<std::string>> itemPair)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        theTable.insert(itemPair);
     }
 
     bool processInsert(std::string item)  // LAST THREE LINES OF PROCESS: Splitted here
@@ -158,6 +157,11 @@ private:
     std::list<std::string> workQueue;
     std::mutex mutex;
 public:
+    auto size()
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        return workQueue.size();
+    }   
     void push_back(std::string item)
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -170,11 +174,6 @@ public:
         {
             workQueue.pop_front();
         }
-    }
-    auto size()
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        return workQueue.size();
     }
     std::string front()
     {
@@ -314,18 +313,9 @@ static void process(const char *file, std::list<std::string> *ll)
             *q++ = *p++;
         }
         *q = '\0';
-        // 2bii. append file name to dependency list
+
         ll->push_back( {name} );
-        // 2bii. if file name not already in table ...
-        //if (theTable.find(name) != theTable.end())
-        //{
-        //    continue;
-        //}
-        // ... insert mapping from file name to empty list in table ...
         tableQueueProcess(name);
-        //theTable.insert( { name, {} } );
-        // ... append file name to workQ
-        //workQ.push_back( name );
     }
     // 3. close file
     fclose(fd);
@@ -447,23 +437,6 @@ int main(int argc, char *argv[])
             threads[i].join();
         }
     }
-
-
-    // 4. for each file on the workQ
-    /*while ( workQ.size() > 0 )
-    {
-        std::string filename = workQ.front();
-        workQ.pop_front();
-
-        if (theTable.compare(filename))
-        {
-            fprintf(stderr, "Mismatch between table and workQ\n");
-            return -1;
-        }
-
-        // 4a&b. lookup dependencies and invoke 'process'
-        process(filename.c_str(), theTable.getAddress(filename));
-    }*/
 
     // 5. for each file argument
     for (i = start; i < argc; i++)
