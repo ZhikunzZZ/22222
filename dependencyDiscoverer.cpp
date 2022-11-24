@@ -120,20 +120,20 @@ public:
         std::unique_lock<std::mutex> lock(mutex);
         return theTable.find(item);
     }
-    auto get(std::string item)
+    auto get(std::string name)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        return &theTable[item];
+        return &theTable[name];
     }
     auto end()
     {
         std::unique_lock<std::mutex> lock(mutex);
         return theTable.end();
     }
-    void insert(std::pair<std::string, std::list<std::string>> itemPair)
+    void insert(std::pair<std::string, std::list<std::string>> obj)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        theTable.insert(itemPair);
+        theTable.insert(obj);
     }
 
     bool processInsert(std::string item)
@@ -162,10 +162,10 @@ public:
         std::unique_lock<std::mutex> lock(mutex);
         return workQueue.size();
     }   
-    void push_back(std::string item)
+    void push_back(std::string a)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        workQueue.push_back(item);
+        workQueue.push_back(a);
     }
     void pop_front()
     {
