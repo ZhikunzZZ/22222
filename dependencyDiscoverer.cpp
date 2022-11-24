@@ -118,14 +118,12 @@ public:
     auto find(std::string item)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        auto ret= theTable.find(item);
-        return ret;
+        return theTable.find(item);
     }
     auto getAddress(std::string item)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        auto address= &theTable[item];
-        return address;
+        return &theTable[item];
     }
     void insert(std::pair<std::string, std::list<std::string>> itemPair)
     {
@@ -136,16 +134,9 @@ public:
     auto end()
     {
         std::unique_lock<std::mutex> lock(mutex);
-        auto item= theTable.end();
-        return item;
+        return theTable.end();
     }
 
-    bool compare(std::string item)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        bool ret= (theTable.find(item)==theTable.end());
-        return ret;
-    }
     bool processInsert(std::string item)  // LAST THREE LINES OF PROCESS: Splitted here
     {
         std::unique_lock<std::mutex> lock(mutex);
