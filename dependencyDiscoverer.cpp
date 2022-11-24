@@ -109,34 +109,6 @@
 #include <mutex>
 #include <thread>
 
-struct Dir
-{
-private:
-    std::vector<std::string> dirs;
-    std::mutex mutex;
-public:
-    auto get(int i)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        auto item=dirs[i];
-        lock.unlock();
-        return item;
-    }
-    void push_back(std::string item)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        dirs.push_back(item);
-        lock.unlock();
-    }
-    auto size()
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        auto s= dirs.size();
-        lock.unlock();
-        return s;
-    }
-};
-
 struct HashMap
 {
 private:
@@ -272,7 +244,7 @@ public:
 
 };
 
-Dir dirs;
+std::vector<std::string> dirs;
 HashMap theTable;
 WorkQueue workQ;
 
@@ -312,7 +284,7 @@ static FILE *openFile(const char *file)
     FILE *fd;
     for (unsigned int i = 0; i < dirs.size(); i++)
     {
-        std::string path = dirs.get(i) + file;
+        std::string path = dirs[i] + file;
         fd = fopen(path.c_str(), "r");
         if (fd != NULL)
             return fd; // return the first file that successfully opens
