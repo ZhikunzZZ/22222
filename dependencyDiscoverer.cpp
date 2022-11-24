@@ -404,6 +404,7 @@ int main(int argc, char *argv[]) {
     }
     for(i=0;i<threads_number;i++){
       threads[i].join();
+    }
   }
   // 5. for each file argument
   for (i = start; i < argc; i++) {
