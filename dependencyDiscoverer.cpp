@@ -181,6 +181,7 @@ public:
         std::unique_lock<std::mutex> lock(mutex);
         if(workQueue.size()!=0)
         {
+            //std::string item=workQueue.front();
             return workQueue.front();
         }
         else
@@ -194,13 +195,14 @@ public:
         std::string item;
         if(workQueue.size()!=0)
         {
-            workQueue.pop_front();
-            return workQueue.front();
+            item = workQueue.front();
         }
         else
         {
             return "";
         }
+        workQueue.pop_front();
+        return item;
     }
     void processPush(std::string item, bool equal)  // LAST THREE LINES OF PROCESS: And here
     {
