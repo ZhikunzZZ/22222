@@ -120,7 +120,7 @@ public:
         std::unique_lock<std::mutex> lock(mutex);
         return theTable.find(item);
     }
-    auto getAddress(std::string item)
+    auto get(std::string item)
     {
         std::unique_lock<std::mutex> lock(mutex);
         return &theTable[item];
@@ -136,7 +136,7 @@ public:
         theTable.insert(itemPair);
     }
 
-    bool processInsert(std::string item)  // LAST THREE LINES OF PROCESS: Splitted here
+    bool processInsert(std::string item)
     {
         std::unique_lock<std::mutex> lock(mutex);
         if(theTable.find(item)==theTable.end())
@@ -203,7 +203,7 @@ public:
         workQueue.pop_front();
         return item;
     }
-    void processPush(std::string item, bool equal)  // LAST THREE LINES OF PROCESS: And here
+    void processPush(std::string item, bool equal)
     {
         if(equal)
         {
@@ -222,7 +222,7 @@ std::vector<std::string> dirs;
 HashMap theTable;
 WorkQueue workQ;
 
-void tableQueueProcess(std::string name)  // LAST THREE LINES OF PROCESS: Merged here
+void tableQueueProcess(std::string name)
 {
     bool equal = theTable.processInsert(name);
     workQ.processPush(name,equal);
@@ -313,7 +313,7 @@ static void process(const char *file, std::list<std::string> *ll)
             *q++ = *p++;
         }
         *q = '\0';
-
+        // 2bii. append file name to dependency list
         ll->push_back( {name} );
         tableQueueProcess(name);
     }
@@ -335,7 +335,7 @@ static void printDependencies(std::unordered_set<std::string> *printed,
         std::string name = toProcess->front();
         toProcess->pop_front();
         // 3. lookup file in the table, yielding list of dependencies
-        std::list<std::string> *ll = theTable.getAddress(name);
+        std::list<std::string> *ll = theTable.get(name);
         // 4. iterate over dependencies
         for (auto iter = ll->begin(); iter != ll->end(); iter++)
         {
@@ -359,7 +359,7 @@ void runningInThread(){
         if(name.empty()){
             break;
         }
-        process(name.c_str(),theTable.getAddress(name));
+        process(name.c_str(),theTable.get(name));
     }
 }
 int main(int argc, char *argv[])
