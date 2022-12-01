@@ -95,8 +95,6 @@
  * openFile()  - attempts to open a filename using the search path defined by the dirs vector.
  */
 
-// This is my own work as defined in the Academic Ethics agreement I have signed
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,145 +105,89 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
+
+//added by me
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include <chrono>
-#include <atomic>
+
+class safeQueue{
+  private:
+    std::list<std::string> generalQ;
+    mutable std::mutex m;
+    std::condition_variable con;
+  public:
+    safeQueue(){
+
+    }
+    void push(std::string input){
+      std::lock_guard<std::mutex> lock(m);
+      generalQ.push_back(input);
+      con.notify_one();
+    }
+    std::string pop(){
+      std::unique_lock<std::mutex> lock(m);
+      con.wait(lock, [this]{return !generalQ.empty();});
+      std::string output = generalQ.front(); 
+      generalQ.pop_front(); 
+      return output;
+    }
+    bool isEmpty(){
+      std::lock_guard<std::mutex> lock(m);
+      return generalQ.empty();
+    }
+};
+
+class safeMap{
+  private:
+    std::unordered_map<std::string, std::list<std::string>> table;
+    mutable std::mutex m;
+  public:
+    safeMap(){
+
+    }
+    void create(std::string name, std::list<std::string> list){
+      std::lock_guard<std::mutex> lock(m);
+      table.insert({name, list});      
+    }
+    std::list<std::string> *lookUp(std::string input){
+      std::lock_guard<std::mutex> lock(m);
+      if (table.find(input) == table.end()) { return { }; }
+      return &table[input];
+    }
+    bool contains(std::string input){
+      return table.find(input) != table.end();
+    }
+
+
+
+};
+
+
 std::vector<std::string> dirs;
-// std::unordered_map<std::string, std::list<std::string>> theTable;
-// std::list<std::string> workQ;
+safeMap theTable;
+safeQueue workQ;
 
-// Data safe structure for WorkQueue
-struct WorkQueue
-{
-private:
-  std::list<std::string> workQ;
-  std::mutex m;
-  std::condition_variable cv;
-  // to count active threads
-  int counter;
-
-public:
-  // push the name into the queue
-  void push(std::string item)
-  {
-    std::unique_lock<std::mutex> lock(m);
-    workQ.push_back(item);
-  }
-
-  // return the filename in the front and pop the filename
-  std::string pop_wait()
-  {
-    std::unique_lock<std::mutex> lock(m);
-    std::string filename;
-    // if the workQ is not empy, we return the filename and pop the filename
-    if (!workQ.empty())
-    {
-      filename = workQ.front();
-      workQ.pop_front();
-      return filename;
-    }
-    else
-    {
-      // if the workQ is empty, decrease the counter by one (this thread is not doing anything)
-      counter--;
-
-      // we wait till the counter is equal to zero(without busy waiting), which means all threads finishes
-      // or workQ is not empty anymore which means some other active threads were adding new filename into the workQ
-      // activate this thread back to work
-      cv.wait(lock, [this]
-              { return (counter != 0 && workQ.size() == 0); });
-
-      // if the workQ is not empty, we increment the counter which means this thread is active now
-      // and pop the filename and return the filename
-      if (workQ.size() > 0)
-      {
-        counter++;
-        filename = workQ.front();
-        workQ.pop_front();
-        return filename;
-      }
-      // if the counter is 0, we will return back a empty filename, and it will break in the thread_function
-      return filename;
-    }
-  }
-
-  void setCounter(int number)
-  {
-    std::unique_lock<std::mutex> lock(m);
-    counter = number;
-  }
-
-  bool size()
-  {
-    return workQ.size();
-  }
-};
-
-// Data safe structure for TheTable
-struct TheTable
-{
-private:
-  std::unordered_map<std::string, std::list<std::string>> theTable;
-  std::mutex l;
-
-public:
-  // insert the name and the dependecies to the table
-  void insert(std::string key, std::list<std::string> value)
-  {
-    std::unique_lock<std::mutex> lock(l);
-    theTable.insert({key, value});
-  }
-
-  // return true if the name exist in the table
-  bool find_compare(std::string name)
-  {
-    std::unique_lock<std::mutex> lock(l);
-    return theTable.find(name) != theTable.end();
-  }
-
-  // return the pointer to dependencies list
-  std::list<std::string> *get_de(std::string name)
-  {
-    return &theTable[name];
-  }
-};
-
-// Create the workQueue and theTable here
-struct WorkQueue workQueue;
-struct TheTable theTable;
-
-std::string dirName(const char *c_str)
-{
+std::string dirName(const char * c_str) {
   std::string s = c_str; // s takes ownership of the string content by allocating memory for it
-  if (s.back() != '/')
-  {
-    s += '/';
-  }
+  if (s.back() != '/') { s += '/'; }
   return s;
 }
 
-std::pair<std::string, std::string> parseFile(const char *c_file)
-{
+std::pair<std::string, std::string> parseFile(const char* c_file) {
   std::string file = c_file;
   std::string::size_type pos = file.rfind('.');
-  if (pos == std::string::npos)
-  {
+  if (pos == std::string::npos) {
     return {file, ""};
-  }
-  else
-  {
+  } else {
     return {file.substr(0, pos), file.substr(pos + 1)};
   }
 }
 
 // open file using the directory search path constructed in main()
-static FILE *openFile(const char *file)
-{
+static FILE *openFile(const char *file) {
   FILE *fd;
-  for (unsigned int i = 0; i < dirs.size(); i++)
-  {
+  for (unsigned int i = 0; i < dirs.size(); i++) {
     std::string path = dirs[i] + file;
     fd = fopen(path.c_str(), "r");
     if (fd != NULL)
@@ -255,63 +197,41 @@ static FILE *openFile(const char *file)
 }
 
 // process file, looking for #include "foo.h" lines
-static void process(const char *file, std::list<std::string> *ll)
-{
+static void process(const char *file, std::list<std::string> *ll) {
   char buf[4096], name[4096];
   // 1. open the file
   FILE *fd = openFile(file);
-  if (fd == NULL)
-  {
+  if (fd == NULL) {
     fprintf(stderr, "Error opening %s\n", file);
     exit(-1);
   }
-  while (fgets(buf, sizeof(buf), fd) != NULL)
-  {
+  while (fgets(buf, sizeof(buf), fd) != NULL) {
     char *p = buf;
     // 2a. skip leading whitespace
-    while (isspace((int)*p))
-    {
-      p++;
-    }
-    // 2b. if match #include
-    if (strncmp(p, "#include", 8) != 0)
-    {
-      continue;
-    }
+    while (isspace((int)*p)) { p++; }
+    // 2b. if match #include 
+    if (strncmp(p, "#include", 8) != 0) { continue; }
     p += 8; // point to first character past #include
     // 2bi. skip leading whitespace
-    while (isspace((int)*p))
-    {
-      p++;
-    }
-    if (*p != '"')
-    {
-      continue;
-    }
+    while (isspace((int)*p)) { p++; }
+    if (*p != '"') { continue; }
     // 2bii. next character is a "
     p++; // skip "
     // 2bii. collect remaining characters of file name
     char *q = name;
-    while (*p != '\0')
-    {
-      if (*p == '"')
-      {
-        break;
-      }
+    while (*p != '\0') {
+      if (*p == '"') { break; }
       *q++ = *p++;
     }
     *q = '\0';
     // 2bii. append file name to dependency list
-    ll->push_back({name});
+    ll->push_back( {name} );
     // 2bii. if file name not already in table ...
-    if (theTable.find_compare(name))
-    {
-      continue;
-    }
+    if (theTable.contains(name)) { continue; }
     // ... insert mapping from file name to empty list in table ...
-    theTable.insert(name, {});
+    theTable.create(name, {});
     // ... append file name to workQ
-    workQueue.push(name);
+    workQ.push( name );
   }
   // 3. close file
   fclose(fd);
@@ -320,119 +240,70 @@ static void process(const char *file, std::list<std::string> *ll)
 // iteratively print dependencies
 static void printDependencies(std::unordered_set<std::string> *printed,
                               std::list<std::string> *toProcess,
-                              FILE *fd)
-{
-  if (!printed || !toProcess || !fd)
-    return;
+                              FILE *fd) {
+  if (!printed || !toProcess || !fd) return;
 
   // 1. while there is still a file in the toProcess list
-  while (toProcess->size() > 0)
-  {
+  while ( toProcess->size() > 0 ) {
     // 2. fetch next file to process
     std::string name = toProcess->front();
     toProcess->pop_front();
     // 3. lookup file in the table, yielding list of dependencies
-    std::list<std::string> *ll = theTable.get_de(name);
+    std::list<std::string> *ll = theTable.lookUp(name);
     // 4. iterate over dependencies
-    for (auto iter = ll->begin(); iter != ll->end(); iter++)
-    {
+    for (auto iter = ll->begin(); iter != ll->end(); iter++) {
       // 4a. if filename is already in the printed table, continue
-      if (printed->find(*iter) != printed->end())
-      {
-        continue;
-      }
+      if (printed->find(*iter) != printed->end()) { continue; }
       // 4b. print filename
       fprintf(fd, " %s", iter->c_str());
       // 4c. insert into printed
-      printed->insert(*iter);
+      printed->insert( *iter );
       // 4d. append to toProcess
-      toProcess->push_back(*iter);
+      toProcess->push_back( *iter );
     }
   }
 }
 
-// the function which need multithreading
-static int thread_function()
-{
-  while (workQueue.size() > 0)
-  {
+void invokeProcess(){
 
-    std::string filename = workQueue.pop_wait();
-    // if the filename is not empty, we process the file normally
-    if (!filename.empty())
-    {
-      if (!theTable.find_compare(filename))
-      {
-        fprintf(stderr, "Mismatch between table and workQ\n");
-        return -1;
-      }
-
-      // 4a&b. lookup dependencies and invoke 'process'
-      process(filename.c_str(), theTable.get_de(filename));
-    }
-    else
-    {
-      // if the filename is empty which means counter is 0 and all threads finishing working
-      break;
-    }
-  }
-  return 0;
+    std::string filename = workQ.pop();
+    // 4a&b. lookup dependencies and invoke 'process'
+    process(filename.c_str(), theTable.lookUp(filename));
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   // 1. look up CPATH in environment
   char *cpath = getenv("CPATH");
 
-  // Get the number of threads
-  char *numThreads = getenv("CRAWLER_THREADS");
-  int numT;
-  // if the thread number is not provide, set the thread to 1
-  if (numThreads != NULL)
-  {
-    numT = *numThreads - '0';
-  }
-  else
-  {
-    numT = 1;
-  }
-
-  workQueue.setCounter(numT);
   // determine the number of -Idir arguments
   int i;
-  for (i = 1; i < argc; i++)
-  {
+  for (i = 1; i < argc; i++) {
     if (strncmp(argv[i], "-I", 2) != 0)
       break;
   }
   int start = i;
 
   // 2. start assembling dirs vector
-  dirs.push_back(dirName("./")); // always search current directory first
-  for (i = 1; i < start; i++)
-  {
-    dirs.push_back(dirName(argv[i] + 2 /* skip -I */));
+  dirs.push_back( dirName("./") ); // always search current directory first
+  for (i = 1; i < start; i++) {
+    dirs.push_back( dirName(argv[i] + 2 /* skip -I */) );
   }
-  if (cpath != NULL)
-  {
-    std::string str(cpath);
+  if (cpath != NULL) {
+    std::string str( cpath );
     std::string::size_type last = 0;
     std::string::size_type next = 0;
-    while ((next = str.find(":", last)) != std::string::npos)
-    {
-      dirs.push_back(str.substr(last, next - last));
+    while((next = str.find(":", last)) != std::string::npos) {
+      dirs.push_back( str.substr(last, next-last) );
       last = next + 1;
     }
-    dirs.push_back(str.substr(last));
+    dirs.push_back( str.substr(last) );
   }
   // 2. finished assembling dirs vector
 
   // 3. for each file argument ...
-  for (i = start; i < argc; i++)
-  {
+  for (i = start; i < argc; i++) {
     std::pair<std::string, std::string> pair = parseFile(argv[i]);
-    if (pair.second != "c" && pair.second != "y" && pair.second != "l")
-    {
+    if (pair.second != "c" && pair.second != "y" && pair.second != "l") {
       fprintf(stderr, "Illegal extension: %s - must be .c, .y or .l\n",
               pair.second.c_str());
       return -1;
@@ -441,49 +312,42 @@ int main(int argc, char *argv[])
     std::string obj = pair.first + ".o";
 
     // 3a. insert mapping from file.o to file.ext
-    theTable.insert(obj, {argv[i]});
-
+    theTable.create( obj, { argv[i] });
+    
     // 3b. insert mapping from file.ext to empty list
-    theTable.insert(argv[i], {});
-
+    theTable.create( argv[i], { });
+    
     // 3c. append file.ext on workQ
-    workQueue.push(argv[i]);
+    workQ.push( argv[i] );
   }
 
+  int numberOfThreads = 2;
+  if(getenv("CRAWLER_THREADS") != NULL){
+    numberOfThreads = atoi(getenv("CRAWLER_THREADS"));
+  }
+  
   // 4. for each file on the workQ
-  /*while ( workQueue.size() > 0 ) {
-    std::string filename = workQueue.front();
-    workQueue.pop_wait();
+  std::vector<std::thread> threadVector;
+  while ( !workQ.isEmpty()) {
+    int currentActive = 0;
+    threadVector.clear();
 
-    if (!theTable.find_compare(filename)) {
-      fprintf(stderr, "Mismatch between table and workQ\n");
-      return -1;
+    for(int i = 0; i < numberOfThreads; i++){
+      if(!workQ.isEmpty()){
+        threadVector.emplace_back(invokeProcess);
+        currentActive++;
+      }
     }
 
-    // 4a&b. lookup dependencies and invoke 'process'
-    process(filename.c_str(), theTable.get_de(filename));
-  }*/
 
-  // Create the vector of threads here
-  std::thread t[numT];
-
-  // initialise all the threads
-  for (int i = 0; i < numT; i++)
-  {
-    t[i] = std::thread(thread_function);
+    for(int i = 0; i < currentActive; i++){
+      threadVector[i].join();
+    }
   }
-
-  // while wQ.counter > 0
-
-  // join all the threads
-  for (int i = 0; i < numT; i++)
-  {
-    t[i].join();
-  }
+  
 
   // 5. for each file argument
-  for (i = start; i < argc; i++)
-  {
+  for (i = start; i < argc; i++) {
     // 5a. create hash table in which to track file names already printed
     std::unordered_set<std::string> printed;
     // 5b. create list to track dependencies yet to print
@@ -495,8 +359,8 @@ int main(int argc, char *argv[])
     // 5c. print "foo.o:" ...
     printf("%s:", obj.c_str());
     // 5c. ... insert "foo.o" into hash table and append to list
-    printed.insert(obj);
-    toProcess.push_back(obj);
+    printed.insert( obj );
+    toProcess.push_back( obj );
     // 5d. invoke
     printDependencies(&printed, &toProcess, stdout);
 
@@ -505,3 +369,5 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
+
