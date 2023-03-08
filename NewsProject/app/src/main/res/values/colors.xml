@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="theme_color">#181829</color>
+    <color name="bottom_color">#222232</color>
+    <color name="color_f00886c">#F0886C</color>
+    <color name="blue">#2459CA</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

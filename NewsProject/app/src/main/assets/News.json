@@ -1,0 +1,26 @@
+[
+  {
+    "id": 0,
+    "newsType": "Sports",
+    "newsIcon": "icon_sports",
+    "newsDescImg": "desc_sports_img"
+  },
+  {
+    "id": 1,
+    "newsType": "Business",
+    "newsIcon": "icon_business",
+    "newsDescImg": "desc_business_img"
+  },
+  {
+    "id": 2,
+    "newsType": "Finance",
+    "newsIcon": "icon_finance",
+    "newsDescImg": "desc_finance_img"
+  },
+  {
+    "id": 3,
+    "newsType": "Healthcare",
+    "newsIcon": "icon_healthcare",
+    "newsDescImg": "desc_healthcare_img"
+  }
+]
